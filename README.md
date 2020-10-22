@@ -4,6 +4,22 @@ This is a repo containing research code and things for my trans voice project.
 This readme serves as a reminder to myself and as a quick-start for anyone hoping
 to understand what is going on in my head and this mess of code.
 
+## Getting started and using this mess
+
+Presuming you have python3 and pip installed on a Linux/MacOS environment already,
+check this branch out and install all the dependencies like so:
+
+    git clone --recursive https://github.com/jj-tetraquark/TransVoice.git
+    cd TransVoice
+    python3 -m venv .env
+    source .env/bin/activate
+    pip install -r requirements.txt
+    cd praat_formants_python && python setup.py install && cd ..
+
+
+I'm trying to use jupyter notebooks to organise my work and thoughts so you can launch
+that with `jupyter notebook`. Currently everything is in the AnalysisNotebook
+
 ## Dataset
 
 Included in the repository are csvs of the auto-extracted formants from the dev
@@ -21,5 +37,3 @@ The raw data is not included in this repo as it's fucking huge, just running `ls
 the directory takes minutes to complete. Even the dev subset
 is like 2GB converted to wav. If you want to use it you'll need to download it from
 [The common voice project](https://commonvoice.mozilla.org/en/datasets)
-
-
