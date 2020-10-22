@@ -1,0 +1,3 @@
+[submodule "praat_formants_python"]
+	path = praat_formants_python
+	url = https://github.com/mwv/praat_formants_python.git
