@@ -28,6 +28,11 @@ def extract_column(column_name, data):
         return column.astype(dtype)
 
 
+def extract_columns_all_phonemes(column_name, data_by_phoneme):
+    return np.array([x for phoneme in data_by_phoneme.values()
+                     for x in extract_column(column_name, phoneme)])
+
+
 def split_data_by_phoneme(data):
     phonemes = extract_column('phoneme', data)
     return {phoneme: np.vstack([data[0], data[1:][phonemes == phoneme, :]])

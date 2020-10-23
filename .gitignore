@@ -3,8 +3,8 @@ __pycache__
 *.pyc
 *.pkl
 .env
-common-voice/clips/*
-common-voice/common_voice_en_wav
-common-voice/*.tsv
+common_voice/clips/*
+common_voice/common_voice_en_wav
+common_voice/*.tsv
 montreal-forced-aligner*
 .ipynb_checkpoints
