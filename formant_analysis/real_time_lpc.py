@@ -1,3 +1,7 @@
+# I did not write this, it's taken from
+# http://www.willforfang.com/misc-python/2015/12/9/real-time-audio-visualizationprocessing
+# TODO - write a better one
+
 from matplotlib.animation import FuncAnimation
 from audiolazy import lazy_lpc as lpc
 import matplotlib.pyplot as plt
@@ -27,7 +31,7 @@ RATE = 44100
 # Spectral parameters
 #############################
 ORDER = 12
-NFFT = CHUNK*2
+NFFT = RATE/2
 # correlation: 12*4*1024 = 49152
 # matrix solution: 12*12 = 144
 # matrix solution cov: 12*12*12 = 1728
@@ -38,7 +42,7 @@ NFFT = CHUNK*2
 #############################
 def est_predictor_gain(x, a):
     cor = np.correlate(x, x, mode='full')
-    rr = cor[len(cor)/2: len(cor)/2+ORDER+1]
+    rr = cor[int(len(cor)/2): int(len(cor)/2+ORDER+1)]
     g = np.sqrt(np.sum(a*rr))
     return g
 
@@ -48,13 +52,13 @@ def lpc_spectrum(data):
     g = est_predictor_gain(data, a.numerator)
     spectral_lpc = np.fft.fft([xx/g for xx in a.numerator], NFFT)
     S = -20*np.log10(np.abs(spectral_lpc)**2)
-    return S[0:NFFT/2]
+    return S[0:int(NFFT/2)]
 
 
 def spectral_estimate(data):
     spectral = np.fft.fft(data, NFFT)
     S = 20*np.log10(np.abs(spectral)**2)
-    return S[0:NFFT/2]
+    return S[0:int(NFFT/2)]
 
 
 if __name__ == '__main__':
@@ -63,18 +67,18 @@ if __name__ == '__main__':
     # Create audio stream
     ##########################
     p = pyaudio.PyAudio()
-    print "Checking compatability with input parameters:"
-    print "\tAudio Device:", DEVICE
-    print "\tRate:", RATE
-    print "\tChannels:", CHANNELS
-    print "\tFormat:", FORMAT
+    print("Checking compatability with input parameters:")
+    print("\tAudio Device: {}".format(DEVICE))
+    print("\tRate:{}".format(RATE))
+    print("\tChannels:{}".format(CHANNELS))
+    print("\tFormat:{}".format(FORMAT))
 
     isSupported = p.is_format_supported(input_format=FORMAT,
                                         input_channels=CHANNELS,
                                         rate=RATE,
                                         input_device=DEVICE)
     if isSupported:
-        print "\nThese settings are supported on device %i!\n" % (DEVICE)
+        print("\nThese settings are supported on device {}!\n".format(DEVICE))
     else:
         sys.exit("\nUh oh, these settings aren't",
                  " supported on device %i.\n" % (DEVICE))
@@ -90,7 +94,7 @@ if __name__ == '__main__':
     ##########################
     errorCount = [0]
     if not headless:
-        oldy = range(2*CHUNK)
+        oldy = list(range(2*CHUNK))
 
         ######################################################
         # Create new Figure and an Axes to occupy the figure.
@@ -100,7 +104,7 @@ if __name__ == '__main__':
 
         if timeDomain:
             axTime = fig.add_axes([.1, .5*nAx - .5 + .1/nAx, .8, .4*(3-nAx)])
-            axTime.set_axis_bgcolor('#c6dbef')
+            axTime.set_facecolor('#c6dbef')
             plt.grid()
             lineTime, = axTime.plot(range(2*CHUNK), range(2*CHUNK), c='#08519c')
             plt.ylim([-4000, 4000])
@@ -113,12 +117,12 @@ if __name__ == '__main__':
 
         if freqDomain:
             axFreq = fig.add_axes([.1, .1/nAx, .8, 0.4*(3-nAx)])
-            axFreq.set_axis_bgcolor('#c6dbef')
+            axFreq.set_facecolor('#c6dbef')
             plt.grid()
-            lineFreq, = axFreq.plot(range(NFFT/2), [0]*(NFFT/2),
+            lineFreq, = axFreq.plot(range(int(NFFT/2)), [0]*(int(NFFT/2)),
                                     c='#6baed6', label='FFT')
             if lpcOverlay:
-                lineLPC, = axFreq.plot(range(NFFT/2), [0]*(NFFT/2),
+                lineLPC, = axFreq.plot(range(int(NFFT/2)), [0]*(int(NFFT/2)),
                                        '--', c='#08519c', label='LPC Envelope')
             plt.ylim([-50, 300])
             plt.xlim([0, NFFT/2])
@@ -136,7 +140,8 @@ if __name__ == '__main__':
             global oldy
             objects_to_return = []
             try:
-                incoming = np.fromstring(stream.read(CHUNK), 'Int16')
+                incoming = np.frombuffer(stream.read(CHUNK,
+                                         exception_on_overflow=False), np.int16)
                 if timeDomain:
                     newy = oldy[CHUNK:]
                     newy.extend(incoming)
@@ -153,11 +158,11 @@ if __name__ == '__main__':
                     objects_to_return.append(lineFreq)
                     objects_to_return.append(lineLPC)
             except IOError as e:
-                print str(e),
+                print(str(e)),
                 errorCount[0] += 1
                 if errorCount[0] > 5:
-                    print "This is happening often.",
-                    print " (Try increasing size of \'CHUNK\'.)"
+                    print("This is happening often. \
+                           Try increasing size of \'CHUNK\'.)")
                 else:
                     print
             return objects_to_return
@@ -168,6 +173,6 @@ if __name__ == '__main__':
     else:
         while True:
             incoming = np.fromstring(stream.read(CHUNK), 'Int16')
-            S = spectral_estimate(windowed)
+            #S = spectral_estimate(windowed)
             #  Do some processing stuff here!
 
